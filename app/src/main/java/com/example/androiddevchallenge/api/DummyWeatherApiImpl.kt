@@ -25,7 +25,6 @@ import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.contextual
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
-import java.time.temporal.TemporalUnit
 import javax.inject.Inject
 
 class DummyWeatherApiImpl @Inject constructor() : WeatherApi {
@@ -50,9 +49,11 @@ class DummyWeatherApiImpl @Inject constructor() : WeatherApi {
             }
         }.decodeFromString<WeatherForecastResponse>(DummyForecastDataStr).let {
             val now = LocalDateTime.now().truncatedTo(ChronoUnit.HOURS)
-            it.copy(list = it.list.mapIndexed { index, f ->
-                f.copy(dt = now.plusHours(index * 3L))
-            })
+            it.copy(
+                list = it.list.mapIndexed { index, f ->
+                    f.copy(dt = now.plusHours(index * 3L))
+                }
+            )
         }
     }
 

@@ -21,10 +21,10 @@ import kotlinx.serialization.Contextual
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import java.time.LocalDateTime
+import com.example.androiddevchallenge.model.Forecast as ModelForecast
 import com.example.androiddevchallenge.model.Temperature as ModelTemp
 import com.example.androiddevchallenge.model.Weather as ModelWeather
 import com.example.androiddevchallenge.model.Wind as ModelWind
-import com.example.androiddevchallenge.model.Forecast as ModelForecast
 
 @Serializable
 data class Weather(
@@ -120,4 +120,3 @@ private fun iconToWeather(icon: String) = when (icon) {
     "49d", "50n" -> ModelWeather.Mist
     else -> ModelWeather.Unknown
 }
-
