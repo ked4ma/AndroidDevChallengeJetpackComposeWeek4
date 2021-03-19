@@ -37,7 +37,11 @@ data class CurrentWeatherResponse(
         name = weather.first().main,
         desc = weather.first().description,
         weather = iconToWeather(weather.first().icon),
-        temp = ModelTemp(value = temp.temp, max = temp.tempMax, min = temp.tempMin),
+        temp = ModelTemp(
+            value = temp.temp,
+            max = temp.tempMax,
+            min = temp.tempMin,
+        ),
         wind = ModelWind(wind.speed),
     )
 

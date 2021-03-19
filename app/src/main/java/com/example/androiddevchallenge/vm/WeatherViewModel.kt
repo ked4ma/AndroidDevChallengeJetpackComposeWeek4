@@ -24,19 +24,25 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import java.time.LocalDateTime
 import javax.inject.Inject
 
 @HiltViewModel
 class WeatherViewModel @Inject constructor(
     private val repository: WeatherRepository
 ) : ViewModel() {
-    val currentWeather = repository.currentData
+    val currentWeatherState = repository.currentData
         .toLoadState()
         .stateIn(viewModelScope, SharingStarted.Lazily, LoadState.Loading)
+
+    var currentTime = LocalDateTime.now()
+        private set
 
     init {
         viewModelScope.launch {
             repository.refresh()
         }
+        currentTime = LocalDateTime.now()
     }
+
 }

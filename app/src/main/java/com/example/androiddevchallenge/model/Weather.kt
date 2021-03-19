@@ -3,7 +3,7 @@ package com.example.androiddevchallenge.model
 import androidx.annotation.DrawableRes
 import com.example.androiddevchallenge.R
 
-enum class Weather(@DrawableRes daytime: Int, @DrawableRes nighttime: Int = daytime) {
+enum class Weather(@DrawableRes val daytime: Int, @DrawableRes val nighttime: Int = daytime) {
     Sunny(R.drawable.ic_day_sunny, R.drawable.ic_night_clear),
     DayCloudy(R.drawable.ic_day_cloudy, R.drawable.ic_night_cloudy),
     Cloudy(R.drawable.ic_cloud),

@@ -10,4 +10,6 @@
       the License.
       -->
     <string name="app_name">Weather</string>
+    <string name="temperature">%d℃</string>
+    <string name="temperature_range">↑ %d℃ - ↓ %d℃</string>
 </resources>
