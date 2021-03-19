@@ -22,9 +22,12 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -34,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
@@ -46,6 +50,7 @@ import com.example.androiddevchallenge.ui.theme.MyTheme
 import com.example.androiddevchallenge.util.Const
 import com.example.androiddevchallenge.util.ShowState
 import com.example.androiddevchallenge.vm.AppViewModel
+import dev.chrisbanes.accompanist.insets.statusBarsPadding
 import kotlin.math.pow
 
 @Composable
@@ -73,7 +78,7 @@ private fun ContentScreen(modifier: Modifier = Modifier, data: CurrentWeather) {
     ConstraintLayout(
         modifier = modifier
             .fillMaxSize()
-            .padding(top = 128.dp)
+            .statusBarsPadding()
     ) {
         val transitionState = remember { MutableTransitionState(ShowState.Hidden) }
         transitionState.targetState = ShowState.Show
@@ -117,6 +122,7 @@ private fun ContentScreen(modifier: Modifier = Modifier, data: CurrentWeather) {
         WeatherInfo(
             title = data.desc, temperature = data.temp, wind = data.wind,
             modifier = Modifier
+                .padding(top = 20.dp)
                 .constrainAs(info) {
                     top.linkTo(parent.top)
                     end.linkTo(parent.end)
@@ -168,5 +174,23 @@ private fun WeatherInfo(
             style = MyTheme.typography.body1,
             modifier = Modifier.align(Alignment.CenterHorizontally),
         )
+        Row(
+            modifier = Modifier
+                .align(Alignment.CenterHorizontally)
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.ic_strong_wind),
+                contentDescription = "",
+                modifier = Modifier
+                    .size(18.dp)
+                    .align(Alignment.CenterVertically),
+            )
+            Text(
+                text = stringResource(R.string.wind_speed, wind.speed),
+                style = MyTheme.typography.body1,
+                modifier = Modifier
+                    .align(Alignment.CenterVertically),
+            )
+        }
     }
 }

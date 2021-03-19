@@ -12,4 +12,5 @@
     <string name="app_name">Weather</string>
     <string name="temperature">%d℃</string>
     <string name="temperature_range">↑ %d℃ - ↓ %d℃</string>
+    <string name="wind_speed">%.01fm/s</string>
 </resources>
