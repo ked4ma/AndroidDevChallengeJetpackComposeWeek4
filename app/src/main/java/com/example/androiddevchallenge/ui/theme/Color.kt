@@ -15,6 +15,7 @@
  */
 package com.example.androiddevchallenge.ui.theme
 
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
 
 val purple200 = Color(0xFFBB86FC)
@@ -24,5 +25,18 @@ val teal200 = Color(0xFF03DAC5)
 
 val gray = Color(0xFF232323)
 
-val blue = Color(0xFF2838A9)
-val red = Color(0xFFE11345)
+val white150 = Color(0x26FFFFFF)
+val white850 = Color(0xD9FFFFFF)
+
+val blue200 = Color(0xFFE0DEED)
+val blue400 = Color(0xFFB5B3CC)
+val blue800 = Color(0xFF3B3761)
+val blue900 = Color(0xFF1F1D35)
+
+data class DomainColors(
+    val gaugeGradientColors: List<Color>
+)
+
+internal val LocalColors = staticCompositionLocalOf<DomainColors> {
+    error("No LocalColors provided")
+}

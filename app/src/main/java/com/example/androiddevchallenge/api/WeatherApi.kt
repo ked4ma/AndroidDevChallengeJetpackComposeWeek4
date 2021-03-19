@@ -16,7 +16,9 @@
 package com.example.androiddevchallenge.api
 
 import com.example.androiddevchallenge.api.data.response.CurrentWeatherResponse
+import com.example.androiddevchallenge.api.data.response.WeatherForecastResponse
 
 interface WeatherApi {
     suspend fun getCurrentData(): CurrentWeatherResponse
+    suspend fun getForecast(): WeatherForecastResponse
 }

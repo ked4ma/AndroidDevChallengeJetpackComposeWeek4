@@ -48,7 +48,7 @@ class MainActivity : AppCompatActivity() {
 // Start building your app here!
 @Composable
 fun App() {
-    Surface(color = MaterialTheme.colors.background) {
+    Surface {
         ProvideWindowInsets {
             ProvideWeatherViewModel(viewModel = viewModel()) {
                 WeatherScreen()

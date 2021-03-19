@@ -22,26 +22,38 @@ import androidx.compose.material.Typography
 import androidx.compose.material.darkColors
 import androidx.compose.material.lightColors
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.ui.graphics.Color
 
 private val DarkColorPalette = darkColors(
     primary = purple200,
     primaryVariant = purple700,
-    secondary = teal200
+    secondary = teal200,
+    background = gray,
+    surface = blue900,
+    onPrimary = Color.White,
+    onSecondary = gray,
+    onBackground = Color.White,
+    onSurface = white850
 )
 
 private val LightColorPalette = lightColors(
     primary = purple500,
     primaryVariant = purple700,
-    secondary = teal200
+    secondary = teal200,
+    background = Color.White,
+    surface = blue200,
+    onPrimary = gray,
+    onSecondary = Color.White,
+    onBackground = gray,
+)
 
-    /* Other default colors to override
-background = Color.White,
-surface = Color.White,
-onPrimary = Color.White,
-onSecondary = Color.Black,
-onBackground = Color.Black,
-onSurface = Color.Black,
-*/
+private val LightDomainColors = DomainColors(
+    gaugeGradientColors = listOf(blue400, blue200)
+)
+
+private val DarkDomainColors = DomainColors(
+    gaugeGradientColors = listOf(blue800, blue900)
 )
 
 @Composable
@@ -52,12 +64,17 @@ fun MyTheme(darkTheme: Boolean = isSystemInDarkTheme(), content: @Composable() (
         LightColorPalette
     }
 
-    MaterialTheme(
-        colors = colors,
-        typography = typography,
-        shapes = shapes,
-        content = content
-    )
+    val domainColors = if (darkTheme) DarkDomainColors else LightDomainColors
+    CompositionLocalProvider(
+        LocalColors provides domainColors
+    ) {
+        MaterialTheme(
+            colors = colors,
+            typography = typography,
+            shapes = shapes,
+            content = content
+        )
+    }
 }
 
 object MyTheme {
@@ -68,4 +85,8 @@ object MyTheme {
     val typography: Typography
         @Composable
         get() = MaterialTheme.typography
+
+    val domainColors: DomainColors
+        @Composable
+        get() = LocalColors.current
 }

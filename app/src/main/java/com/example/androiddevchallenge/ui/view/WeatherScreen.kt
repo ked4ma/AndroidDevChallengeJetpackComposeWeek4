@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.CircularProgressIndicator
@@ -50,6 +51,7 @@ import com.example.androiddevchallenge.ui.theme.MyTheme
 import com.example.androiddevchallenge.util.Const
 import com.example.androiddevchallenge.util.ShowState
 import com.example.androiddevchallenge.vm.AppViewModel
+import dev.chrisbanes.accompanist.insets.navigationBarsPadding
 import dev.chrisbanes.accompanist.insets.statusBarsPadding
 import kotlin.math.pow
 
@@ -96,7 +98,7 @@ private fun ContentScreen(modifier: Modifier = Modifier, data: CurrentWeather) {
         }
 
         val iconGuide = createGuidelineFromStart(iconTransition / 2)
-        val (icon, info) = createRefs()
+        val (icon, info, forecast) = createRefs()
         WeatherIcon(
             weather = data.weather,
             dateTime = AppViewModel.weather.currentTime,
@@ -129,6 +131,16 @@ private fun ContentScreen(modifier: Modifier = Modifier, data: CurrentWeather) {
                     width = Dimension.percent(0.5F)
                 }
                 .alpha(infoTransition)
+        )
+
+        WeatherForecastScreen(
+            modifier = Modifier
+                .fillMaxWidth()
+                .constrainAs(forecast) {
+                    bottom.linkTo(parent.bottom)
+                    height = Dimension.percent(0.5F)
+                }
+                .navigationBarsPadding()
         )
     }
 }

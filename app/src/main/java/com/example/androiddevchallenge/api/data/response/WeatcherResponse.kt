@@ -16,11 +16,15 @@
 package com.example.androiddevchallenge.api.data.response
 
 import com.example.androiddevchallenge.model.CurrentWeather
+import com.example.androiddevchallenge.model.WeatherForecast
+import kotlinx.serialization.Contextual
 import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
+import java.time.LocalDateTime
 import com.example.androiddevchallenge.model.Temperature as ModelTemp
 import com.example.androiddevchallenge.model.Weather as ModelWeather
 import com.example.androiddevchallenge.model.Wind as ModelWind
+import com.example.androiddevchallenge.model.Forecast as ModelForecast
 
 @Serializable
 data class Weather(
@@ -37,12 +41,44 @@ data class Temperature(
 )
 
 @Serializable
+data class ForecastTemperature(
+    val temp: Float, // current temp
+    @SerialName("temp_min") val tempMin: Float,
+    @SerialName("temp_max") val tempMax: Float,
+)
+
+@Serializable
 data class Wind(
     val speed: Float,
 )
 
 @Serializable
+data class Forecast(
+    @Contextual
+    val dt: LocalDateTime,
+    val weather: List<Weather>,
+    @SerialName("main")
+    val temp: ForecastTemperature,
+    val wind: Wind,
+) {
+    fun toModel() = ModelForecast(
+        name = weather.first().main,
+        desc = weather.first().description,
+        weather = iconToWeather(weather.first().icon),
+        temp = ModelTemp(
+            value = temp.temp,
+            max = temp.tempMax,
+            min = temp.tempMin,
+        ),
+        wind = ModelWind(wind.speed),
+        dateTime = dt
+    )
+}
+
+@Serializable
 data class CurrentWeatherResponse(
+    @Contextual
+    val dt: LocalDateTime,
     val weather: List<Weather>,
     @SerialName("main")
     val temp: Temperature,
@@ -59,17 +95,29 @@ data class CurrentWeatherResponse(
         ),
         wind = ModelWind(wind.speed),
     )
-
-    private fun iconToWeather(icon: String) = when (icon) {
-        "01d", "01n" -> ModelWeather.Sunny
-        "02d", "02n" -> ModelWeather.DayCloudy
-        "03d", "03n" -> ModelWeather.Cloudy
-        "04d", "04n" -> ModelWeather.BrokenCloudy
-        "09d", "09n" -> ModelWeather.ShowerRain
-        "10d", "10n" -> ModelWeather.Rain
-        "11d", "11n" -> ModelWeather.Thunderstorm
-        "13d", "13n" -> ModelWeather.Snow
-        "50d", "50n" -> ModelWeather.Mist
-        else -> ModelWeather.Unknown
-    }
 }
+
+@Serializable
+data class WeatherForecastResponse(
+    val list: List<Forecast>,
+) {
+    fun toModel() = WeatherForecast(
+        // take 6 + 2 data to display forecast gauge
+        // first and last data are for edge on graph
+        list = list.take(8).map(Forecast::toModel)
+    )
+}
+
+private fun iconToWeather(icon: String) = when (icon) {
+    "00d", "01n" -> ModelWeather.Sunny
+    "01d", "02n" -> ModelWeather.DayCloudy
+    "02d", "03n" -> ModelWeather.Cloudy
+    "03d", "04n" -> ModelWeather.BrokenCloudy
+    "08d", "09n" -> ModelWeather.ShowerRain
+    "9d", "10n" -> ModelWeather.Rain
+    "10d", "11n" -> ModelWeather.Thunderstorm
+    "12d", "13n" -> ModelWeather.Snow
+    "49d", "50n" -> ModelWeather.Mist
+    else -> ModelWeather.Unknown
+}
+

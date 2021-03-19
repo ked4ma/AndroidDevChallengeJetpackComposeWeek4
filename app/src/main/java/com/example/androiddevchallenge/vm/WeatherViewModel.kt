@@ -35,7 +35,11 @@ class WeatherViewModel @Inject constructor(
         .toLoadState()
         .stateIn(viewModelScope, SharingStarted.Lazily, LoadState.Loading)
 
-    var currentTime = LocalDateTime.now()
+    val forecastState = repository.forecastData
+        .toLoadState()
+        .stateIn(viewModelScope, SharingStarted.Lazily, LoadState.Loading)
+
+    var currentTime: LocalDateTime = LocalDateTime.now()
         private set
 
     init {

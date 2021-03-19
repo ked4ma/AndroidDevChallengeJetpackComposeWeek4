@@ -18,7 +18,9 @@ package com.example.androiddevchallenge.repository
 import com.example.androiddevchallenge.api.DummyWeatherApi
 import com.example.androiddevchallenge.api.WeatherApi
 import com.example.androiddevchallenge.model.CurrentWeather
+import com.example.androiddevchallenge.model.WeatherForecast
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
@@ -36,8 +38,22 @@ class WeatherRepositoryImpl @Inject constructor(
         }
     }
 
+    private val _forecastData = Channel<WeatherForecast>(Channel.CONFLATED)
+    override val forecastData: Flow<WeatherForecast> = flow {
+        try {
+            for (data in _forecastData) {
+                emit(data)
+            }
+        } finally {
+            _forecastData.close()
+        }
+    }
+
     override suspend fun refresh() {
         val data = weatherApi.getCurrentData().toModel()
         _currentData.send(data)
+
+        val forecast = weatherApi.getForecast().toModel()
+        _forecastData.send(forecast)
     }
 }

@@ -16,9 +16,11 @@
 package com.example.androiddevchallenge.repository
 
 import com.example.androiddevchallenge.model.CurrentWeather
+import com.example.androiddevchallenge.model.WeatherForecast
 import kotlinx.coroutines.flow.Flow
 
 interface WeatherRepository {
     val currentData: Flow<CurrentWeather>
+    val forecastData: Flow<WeatherForecast>
     suspend fun refresh()
 }
