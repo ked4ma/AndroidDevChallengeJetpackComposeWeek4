@@ -15,17 +15,11 @@
  */
 package com.example.androiddevchallenge.repository
 
-import androidx.lifecycle.MutableLiveData
 import com.example.androiddevchallenge.api.DummyWeatherApi
 import com.example.androiddevchallenge.api.WeatherApi
-import com.example.androiddevchallenge.api.data.response.CurrentWeatherResponse
 import com.example.androiddevchallenge.model.CurrentWeather
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.consumeAsFlow
 import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.receiveAsFlow
-import kotlinx.coroutines.flow.shareIn
 import javax.inject.Inject
 
 class WeatherRepositoryImpl @Inject constructor(

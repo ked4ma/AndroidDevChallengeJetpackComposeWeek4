@@ -44,5 +44,4 @@ class WeatherViewModel @Inject constructor(
         }
         currentTime = LocalDateTime.now()
     }
-
 }
