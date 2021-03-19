@@ -15,6 +15,14 @@
  */
 package com.example.androiddevchallenge.api
 
+import com.example.androiddevchallenge.api.data.response.CurrentWeatherResponse
 import javax.inject.Inject
 
-class WeatherApiImpl @Inject constructor() : WeatherApi
+// TODO implement this class when use open api.
+// Currently, this app suppose to use OpenWeatherMap
+// ref. https://openweathermap.org
+class WeatherApiImpl @Inject constructor() : WeatherApi {
+    override suspend fun getCurrentData(): CurrentWeatherResponse {
+        error("Not Implemented yet.")
+    }
+}

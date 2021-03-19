@@ -16,11 +16,27 @@
 package com.example.androiddevchallenge.vm
 
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
 import com.example.androiddevchallenge.repository.WeatherRepository
+import com.example.androiddevchallenge.util.LoadState
+import com.example.androiddevchallenge.util.toLoadState
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @HiltViewModel
 class WeatherViewModel @Inject constructor(
-    val repository: WeatherRepository
-) : ViewModel()
+    private val repository: WeatherRepository
+) : ViewModel() {
+    val currentWeather = repository.currentData
+        .toLoadState()
+        .stateIn(viewModelScope, SharingStarted.Lazily, LoadState.Loading)
+
+    init {
+        viewModelScope.launch {
+            repository.refresh()
+        }
+    }
+}
