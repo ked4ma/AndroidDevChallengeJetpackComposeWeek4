@@ -16,6 +16,7 @@
 package com.example.androiddevchallenge.ui.view
 
 import android.content.res.Configuration
+import androidx.annotation.VisibleForTesting
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.MutableTransitionState
@@ -51,6 +52,8 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTag
 import androidx.compose.ui.unit.dp
 import androidx.constraintlayout.compose.ConstraintLayout
 import androidx.constraintlayout.compose.Dimension
@@ -66,30 +69,54 @@ import com.example.androiddevchallenge.util.ShowState
 import com.example.androiddevchallenge.vm.AppViewModel
 import dev.chrisbanes.accompanist.insets.navigationBarsPadding
 import dev.chrisbanes.accompanist.insets.statusBarsPadding
+import java.time.LocalDateTime
 import kotlin.math.pow
 
 @Composable
 fun WeatherScreen() {
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .statusBarsPadding()
-            .navigationBarsPadding()
-    ) {
-        val viewModel = AppViewModel.weather
-        val state by viewModel.weatherInfoState.collectAsState()
+    val viewModel = AppViewModel.weather
+    val state by viewModel.weatherInfoState.collectAsState()
 
-        Crossfade(
-            state,
-            modifier = Modifier.align(Alignment.Center)
-        ) { loadState ->
+    WeatherScreen(state = state, now = viewModel.currentTime) {
+        viewModel.refreshRepository()
+    }
+}
+
+@VisibleForTesting
+@Composable
+fun WeatherScreen(state: LoadState<WeatherInfo>, now: LocalDateTime, onClickRefresh: () -> Unit) {
+    Crossfade(
+        state,
+    ) { loadState ->
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .statusBarsPadding()
+                .navigationBarsPadding()
+        ) {
             when (loadState) {
-                is LoadState.Loading -> LoadingScreen()
-                is LoadState.Error -> ErrorScreen {
-                    viewModel.refreshRepository()
+                is LoadState.Loading -> LoadingScreen(
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .semantics {
+                            testTag = "Loading"
+                        }
+                )
+                is LoadState.Error -> ErrorScreen(
+                    modifier = Modifier
+                        .align(Alignment.Center)
+                        .semantics {
+                            testTag = "Error"
+                        }
+                ) {
+                    onClickRefresh()
                 }
                 is LoadState.Loaded -> ContentScreen(
-                    weatherInfo = loadState.value
+                    weatherInfo = loadState.value,
+                    now = now,
+                    modifier = Modifier.semantics {
+                        testTag = "Loaded"
+                    }
                 )
             }
         }
@@ -131,8 +158,9 @@ private fun LoadingScreen(modifier: Modifier = Modifier) {
     }
 }
 
+@VisibleForTesting
 @Composable
-private fun ErrorScreen(modifier: Modifier = Modifier, onClickRefresh: () -> Unit) {
+fun ErrorScreen(modifier: Modifier = Modifier, onClickRefresh: () -> Unit) {
     Column(modifier = modifier) {
         Icon(
             imageVector = Icons.Default.Error,
@@ -152,7 +180,10 @@ private fun ErrorScreen(modifier: Modifier = Modifier, onClickRefresh: () -> Uni
         IconButton(
             modifier = Modifier
                 .size(60.dp)
-                .align(Alignment.CenterHorizontally),
+                .align(Alignment.CenterHorizontally)
+                .semantics {
+                    testTag = "Refresh Button"
+                },
             onClick = {
                 onClickRefresh()
             }
@@ -168,11 +199,16 @@ private fun ErrorScreen(modifier: Modifier = Modifier, onClickRefresh: () -> Uni
 }
 
 @Composable
-private fun ContentScreen(modifier: Modifier = Modifier, weatherInfo: WeatherInfo) {
+private fun ContentScreen(
+    modifier: Modifier = Modifier,
+    weatherInfo: WeatherInfo,
+    now: LocalDateTime
+) {
     if (LocalConfiguration.current.orientation == Configuration.ORIENTATION_PORTRAIT) {
         Column(modifier = modifier) {
             ContentScreenPortrait(
                 data = weatherInfo.current,
+                now = now,
                 modifier = Modifier.weight(1F)
             )
 
@@ -190,6 +226,7 @@ private fun ContentScreen(modifier: Modifier = Modifier, weatherInfo: WeatherInf
 
             ContentScreenLandscape(
                 data = weatherInfo.current,
+                now = now,
                 modifier = Modifier.fillMaxSize()
             )
         }
@@ -197,7 +234,11 @@ private fun ContentScreen(modifier: Modifier = Modifier, weatherInfo: WeatherInf
 }
 
 @Composable
-private fun ContentScreenPortrait(modifier: Modifier = Modifier, data: CurrentWeather) {
+private fun ContentScreenPortrait(
+    modifier: Modifier = Modifier,
+    data: CurrentWeather,
+    now: LocalDateTime
+) {
     ConstraintLayout(modifier = modifier.fillMaxWidth()) {
         val transitionState = remember { MutableTransitionState(ShowState.Hidden) }
         transitionState.targetState = ShowState.Show
@@ -218,7 +259,7 @@ private fun ContentScreenPortrait(modifier: Modifier = Modifier, data: CurrentWe
         val (icon, info) = createRefs()
         WeatherIcon(
             weather = data.weather,
-            dateTime = AppViewModel.weather.currentTime,
+            dateTime = now,
             modifier = Modifier
                 .constrainAs(icon) {
                     centerVerticallyTo(parent)
@@ -252,7 +293,11 @@ private fun ContentScreenPortrait(modifier: Modifier = Modifier, data: CurrentWe
 }
 
 @Composable
-private fun ContentScreenLandscape(modifier: Modifier = Modifier, data: CurrentWeather) {
+private fun ContentScreenLandscape(
+    modifier: Modifier = Modifier,
+    data: CurrentWeather,
+    now: LocalDateTime
+) {
     ConstraintLayout(modifier = modifier.fillMaxWidth()) {
         val transitionState = remember { MutableTransitionState(ShowState.Hidden) }
         transitionState.targetState = ShowState.Show
@@ -283,7 +328,7 @@ private fun ContentScreenLandscape(modifier: Modifier = Modifier, data: CurrentW
         ) {
             WeatherIcon(
                 weather = data.weather,
-                dateTime = AppViewModel.weather.currentTime,
+                dateTime = now,
                 modifier = Modifier
                     .fillMaxHeight()
                     .align(Alignment.Center)
