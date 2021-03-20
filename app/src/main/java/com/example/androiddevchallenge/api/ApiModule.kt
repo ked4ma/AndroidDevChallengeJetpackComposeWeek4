@@ -19,12 +19,28 @@ import dagger.Binds
 import dagger.Module
 import dagger.hilt.InstallIn
 import dagger.hilt.components.SingletonComponent
+import javax.inject.Qualifier
 
 @Module
 @InstallIn(SingletonComponent::class)
 abstract class ApiModule {
+    @RealWeatherApi
     @Binds
     abstract fun bindWeatherApi(
         weatherApiImpl: WeatherApiImpl
     ): WeatherApi
+
+    @DummyWeatherApi
+    @Binds
+    abstract fun bindDummyWeatherApi(
+        weatherApiImpl: DummyWeatherApiImpl
+    ): WeatherApi
 }
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class RealWeatherApi
+
+@Qualifier
+@Retention(AnnotationRetention.BINARY)
+annotation class DummyWeatherApi
