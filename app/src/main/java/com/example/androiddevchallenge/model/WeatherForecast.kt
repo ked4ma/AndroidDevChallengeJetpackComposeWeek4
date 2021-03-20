@@ -13,14 +13,19 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.androiddevchallenge.repository
+package com.example.androiddevchallenge.model
 
-import com.example.androiddevchallenge.model.CurrentWeather
-import com.example.androiddevchallenge.model.WeatherForecast
-import kotlinx.coroutines.flow.Flow
+import java.time.LocalDateTime
 
-interface WeatherRepository {
-    val currentData: Flow<CurrentWeather>
-    val forecastData: Flow<WeatherForecast>
-    suspend fun refresh()
-}
+data class WeatherForecast(
+    val list: List<Forecast> = emptyList()
+)
+
+data class Forecast(
+    val name: String = "",
+    val desc: String = "",
+    val weather: Weather = Weather.Unknown,
+    val temp: Temperature = Temperature(),
+    val wind: Wind = Wind(),
+    val dateTime: LocalDateTime = LocalDateTime.now()
+)

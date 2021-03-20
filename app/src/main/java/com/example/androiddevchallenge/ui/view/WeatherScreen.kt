@@ -15,6 +15,7 @@
  */
 package com.example.androiddevchallenge.ui.view
 
+import android.content.res.Configuration
 import androidx.compose.animation.Crossfade
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.animation.core.animateFloat
@@ -23,7 +24,9 @@ import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.CircularProgressIndicator
@@ -37,6 +40,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -50,6 +54,7 @@ import com.example.androiddevchallenge.ui.theme.MyTheme
 import com.example.androiddevchallenge.util.Const
 import com.example.androiddevchallenge.util.ShowState
 import com.example.androiddevchallenge.vm.AppViewModel
+import dev.chrisbanes.accompanist.insets.navigationBarsPadding
 import dev.chrisbanes.accompanist.insets.statusBarsPadding
 import kotlin.math.pow
 
@@ -75,6 +80,15 @@ private fun LoadingScreen(modifier: Modifier = Modifier) {
 
 @Composable
 private fun ContentScreen(modifier: Modifier = Modifier, data: CurrentWeather) {
+    if (LocalConfiguration.current.orientation == Configuration.ORIENTATION_PORTRAIT) {
+        ContentScreenPortrait(modifier, data)
+    } else {
+        ContentScreenLandscape(modifier, data)
+    }
+}
+
+@Composable
+private fun ContentScreenPortrait(modifier: Modifier = Modifier, data: CurrentWeather) {
     ConstraintLayout(
         modifier = modifier
             .fillMaxSize()
@@ -96,7 +110,7 @@ private fun ContentScreen(modifier: Modifier = Modifier, data: CurrentWeather) {
         }
 
         val iconGuide = createGuidelineFromStart(iconTransition / 2)
-        val (icon, info) = createRefs()
+        val (icon, info, forecast) = createRefs()
         WeatherIcon(
             weather = data.weather,
             dateTime = AppViewModel.weather.currentTime,
@@ -108,6 +122,89 @@ private fun ContentScreen(modifier: Modifier = Modifier, data: CurrentWeather) {
                 }
                 .alpha(iconTransition)
         )
+
+        val infoTransition by transition.animateFloat(
+            transitionSpec = {
+                tween(durationMillis = 500, delayMillis = 300)
+            }
+        ) { state ->
+            when (state) {
+                ShowState.Hidden -> 0F
+                ShowState.Show -> 1F
+            }
+        }
+        WeatherInfo(
+            title = data.desc, temperature = data.temp, wind = data.wind,
+            modifier = Modifier
+                .padding(top = 20.dp)
+                .constrainAs(info) {
+                    top.linkTo(parent.top)
+                    end.linkTo(parent.end)
+                    width = Dimension.percent(0.5F)
+                }
+                .alpha(infoTransition)
+        )
+
+        WeatherForecastScreen(
+            modifier = Modifier
+                .fillMaxWidth()
+                .constrainAs(forecast) {
+                    bottom.linkTo(parent.bottom)
+                    height = Dimension.percent(0.5F)
+                }
+                .navigationBarsPadding()
+        )
+    }
+}
+
+@Composable
+private fun ContentScreenLandscape(modifier: Modifier = Modifier, data: CurrentWeather) {
+    ConstraintLayout(
+        modifier = modifier
+            .fillMaxSize()
+            .statusBarsPadding()
+    ) {
+        WeatherForecastScreen(
+            modifier = Modifier
+                .fillMaxSize()
+                .navigationBarsPadding()
+        )
+
+        val transitionState = remember { MutableTransitionState(ShowState.Hidden) }
+        transitionState.targetState = ShowState.Show
+
+        val transition = updateTransition(transitionState)
+        val iconTransition by transition.animateFloat(
+            transitionSpec = {
+                tween(durationMillis = 500)
+            }
+        ) { state ->
+            when (state) {
+                ShowState.Hidden -> 0F
+                ShowState.Show -> 1F
+            }
+        }
+
+        val iconGuide = createGuidelineFromStart(iconTransition / 2)
+        val (icon, info, forecast) = createRefs()
+        Box(
+            modifier = Modifier
+                .constrainAs(icon) {
+                    top.linkTo(parent.top)
+                    end.linkTo(iconGuide)
+                    width = Dimension.percent(0.5F)
+                    height = Dimension.percent(0.6F)
+                }
+                .alpha(iconTransition)
+        ) {
+            WeatherIcon(
+                weather = data.weather,
+                dateTime = AppViewModel.weather.currentTime,
+                modifier = Modifier
+                    .fillMaxHeight()
+                    .align(Alignment.Center)
+            )
+        }
 
         val infoTransition by transition.animateFloat(
             transitionSpec = {

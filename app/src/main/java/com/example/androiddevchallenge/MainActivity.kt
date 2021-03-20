@@ -18,7 +18,6 @@ package com.example.androiddevchallenge
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
 import androidx.compose.runtime.Composable
 import androidx.core.view.WindowCompat
@@ -48,7 +47,7 @@ class MainActivity : AppCompatActivity() {
 // Start building your app here!
 @Composable
 fun App() {
-    Surface(color = MaterialTheme.colors.background) {
+    Surface {
         ProvideWindowInsets {
             ProvideWeatherViewModel(viewModel = viewModel()) {
                 WeatherScreen()
