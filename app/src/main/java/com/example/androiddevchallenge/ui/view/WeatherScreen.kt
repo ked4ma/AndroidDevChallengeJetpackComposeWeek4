@@ -32,9 +32,14 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.paddingFromBaseline
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Cached
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -65,8 +70,14 @@ import kotlin.math.pow
 
 @Composable
 fun WeatherScreen() {
-    Box(modifier = Modifier.fillMaxSize()) {
-        val state by AppViewModel.weather.weatherInfoState.collectAsState()
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .statusBarsPadding()
+            .navigationBarsPadding()
+    ) {
+        val viewModel = AppViewModel.weather
+        val state by viewModel.weatherInfoState.collectAsState()
 
         Crossfade(
             state,
@@ -74,12 +85,11 @@ fun WeatherScreen() {
         ) { loadState ->
             when (loadState) {
                 is LoadState.Loading -> LoadingScreen()
-                is LoadState.Error -> Text("Error")
+                is LoadState.Error -> ErrorScreen {
+                    viewModel.refreshRepository()
+                }
                 is LoadState.Loaded -> ContentScreen(
-                    weatherInfo = loadState.value,
-                    modifier = Modifier
-                        .statusBarsPadding()
-                        .navigationBarsPadding()
+                    weatherInfo = loadState.value
                 )
             }
         }
@@ -118,6 +128,42 @@ private fun LoadingScreen(modifier: Modifier = Modifier) {
             modifier = modifier,
             style = MyTheme.typography.body1
         )
+    }
+}
+
+@Composable
+private fun ErrorScreen(modifier: Modifier = Modifier, onClickRefresh: () -> Unit) {
+    Column(modifier = modifier) {
+        Icon(
+            imageVector = Icons.Default.Error,
+            contentDescription = null,
+            modifier = Modifier
+                .size(80.dp)
+                .align(Alignment.CenterHorizontally)
+        )
+        Text(
+            text = "Failed to load Weather Info.",
+            style = MyTheme.typography.body1,
+            modifier = Modifier.paddingFromBaseline(
+                top = 20.dp,
+                bottom = 8.dp
+            )
+        )
+        IconButton(
+            modifier = Modifier
+                .size(60.dp)
+                .align(Alignment.CenterHorizontally),
+            onClick = {
+                onClickRefresh()
+            }
+        ) {
+            Icon(
+                imageVector = Icons.Default.Cached,
+                contentDescription = null,
+                modifier = Modifier
+                    .size(60.dp)
+            )
+        }
     }
 }
 
@@ -175,7 +221,7 @@ private fun ContentScreenPortrait(modifier: Modifier = Modifier, data: CurrentWe
             dateTime = AppViewModel.weather.currentTime,
             modifier = Modifier
                 .constrainAs(icon) {
-                    top.linkTo(parent.top)
+                    centerVerticallyTo(parent)
                     end.linkTo(iconGuide)
                     width = Dimension.percent(0.5F)
                 }
@@ -195,9 +241,8 @@ private fun ContentScreenPortrait(modifier: Modifier = Modifier, data: CurrentWe
         WeatherInfo(
             title = data.desc, temperature = data.temp, wind = data.wind,
             modifier = Modifier
-                .padding(top = 20.dp)
                 .constrainAs(info) {
-                    top.linkTo(parent.top)
+                    centerVerticallyTo(parent)
                     end.linkTo(parent.end)
                     width = Dimension.percent(0.5F)
                 }
