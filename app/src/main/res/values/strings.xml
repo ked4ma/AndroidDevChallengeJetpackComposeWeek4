@@ -16,4 +16,8 @@
     <string name="wind_speed">%.01fm/s</string>
 
     <string name="hour_min">H:mm</string>
+    <string name="loading0">Loading</string>
+    <string name="loading1">Loading.</string>
+    <string name="loading2">Loading..</string>
+    <string name="loading3">Loading...</string>
 </resources>

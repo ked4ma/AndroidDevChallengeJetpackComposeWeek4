@@ -31,13 +31,17 @@ import javax.inject.Inject
 class WeatherViewModel @Inject constructor(
     private val repository: WeatherRepository
 ) : ViewModel() {
-    val currentWeatherState = repository.currentData
+    val weatherInfoState = repository.weatherInfo
         .toLoadState()
         .stateIn(viewModelScope, SharingStarted.Lazily, LoadState.Loading)
 
-    val forecastState = repository.forecastData
-        .toLoadState()
-        .stateIn(viewModelScope, SharingStarted.Lazily, LoadState.Loading)
+    // val currentWeatherState = repository.currentData
+    //     .toLoadState()
+    //     .stateIn(viewModelScope, SharingStarted.Lazily, LoadState.Loading)
+    //
+    // val forecastState = repository.forecastData
+    //     .toLoadState()
+    //     .stateIn(viewModelScope, SharingStarted.Lazily, LoadState.Loading)
 
     var currentTime: LocalDateTime = LocalDateTime.now()
         private set

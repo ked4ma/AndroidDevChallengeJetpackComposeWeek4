@@ -17,43 +17,32 @@ package com.example.androiddevchallenge.repository
 
 import com.example.androiddevchallenge.api.DummyWeatherApi
 import com.example.androiddevchallenge.api.WeatherApi
-import com.example.androiddevchallenge.model.CurrentWeather
-import com.example.androiddevchallenge.model.WeatherForecast
+import com.example.androiddevchallenge.model.WeatherInfo
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import javax.inject.Inject
 
 class WeatherRepositoryImpl @Inject constructor(
     @DummyWeatherApi val weatherApi: WeatherApi
 ) : WeatherRepository {
-    private val _currentData = Channel<CurrentWeather>(Channel.CONFLATED)
-    override val currentData = flow {
+    private val _weatherInfo = Channel<Long>(Channel.CONFLATED)
+    override val weatherInfo = flow {
         try {
-            for (data in _currentData) {
-                emit(data)
+            for (data in _weatherInfo) {
+                val current = weatherApi.getCurrentData().toModel()
+                val forecast = weatherApi.getForecast().toModel()
+                val info = WeatherInfo(
+                    current,
+                    forecast,
+                )
+                emit(info)
             }
         } finally {
-            _currentData.close()
-        }
-    }
-
-    private val _forecastData = Channel<WeatherForecast>(Channel.CONFLATED)
-    override val forecastData: Flow<WeatherForecast> = flow {
-        try {
-            for (data in _forecastData) {
-                emit(data)
-            }
-        } finally {
-            _forecastData.close()
+            _weatherInfo.close()
         }
     }
 
     override suspend fun refresh() {
-        val data = weatherApi.getCurrentData().toModel()
-        _currentData.send(data)
-
-        val forecast = weatherApi.getForecast().toModel()
-        _forecastData.send(forecast)
+        _weatherInfo.send(System.currentTimeMillis())
     }
 }
