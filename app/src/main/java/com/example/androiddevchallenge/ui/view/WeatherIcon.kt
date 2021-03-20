@@ -20,6 +20,8 @@ import androidx.compose.material.Icon
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTag
 import com.example.androiddevchallenge.model.Weather
 import java.time.LocalDateTime
 
@@ -38,6 +40,8 @@ fun WeatherIcon(
             }
         ),
         contentDescription = "",
-        modifier = modifier.aspectRatio(1F)
+        modifier = modifier.aspectRatio(1F).semantics {
+            testTag = "Weather Icon"
+        }
     )
 }
