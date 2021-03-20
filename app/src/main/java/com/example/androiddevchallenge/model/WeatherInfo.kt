@@ -13,12 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.example.androiddevchallenge.repository
+package com.example.androiddevchallenge.model
 
-import com.example.androiddevchallenge.model.WeatherInfo
-import kotlinx.coroutines.flow.Flow
-
-interface WeatherRepository {
-    val weatherInfo: Flow<WeatherInfo?>
-    suspend fun refresh()
-}
+data class WeatherInfo(
+    val current: CurrentWeather = CurrentWeather(),
+    val forecast: WeatherForecast = WeatherForecast(),
+)

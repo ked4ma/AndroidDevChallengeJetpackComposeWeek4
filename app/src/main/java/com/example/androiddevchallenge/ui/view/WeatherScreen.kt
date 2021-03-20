@@ -17,8 +17,12 @@ package com.example.androiddevchallenge.ui.view
 
 import android.content.res.Configuration
 import androidx.compose.animation.Crossfade
+import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.MutableTransitionState
+import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.animateFloat
+import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.core.updateTransition
 import androidx.compose.foundation.layout.Box
@@ -28,10 +32,14 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.paddingFromBaseline
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.Text
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Cached
+import androidx.compose.material.icons.filled.Error
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -49,9 +57,11 @@ import androidx.constraintlayout.compose.Dimension
 import com.example.androiddevchallenge.R
 import com.example.androiddevchallenge.model.CurrentWeather
 import com.example.androiddevchallenge.model.Temperature
+import com.example.androiddevchallenge.model.WeatherInfo
 import com.example.androiddevchallenge.model.Wind
 import com.example.androiddevchallenge.ui.theme.MyTheme
 import com.example.androiddevchallenge.util.Const
+import com.example.androiddevchallenge.util.LoadState
 import com.example.androiddevchallenge.util.ShowState
 import com.example.androiddevchallenge.vm.AppViewModel
 import dev.chrisbanes.accompanist.insets.navigationBarsPadding
@@ -60,14 +70,27 @@ import kotlin.math.pow
 
 @Composable
 fun WeatherScreen() {
-    Box(modifier = Modifier.fillMaxSize()) {
-        val state by AppViewModel.weather.currentWeatherState.collectAsState()
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .statusBarsPadding()
+            .navigationBarsPadding()
+    ) {
+        val viewModel = AppViewModel.weather
+        val state by viewModel.weatherInfoState.collectAsState()
 
-        Crossfade(state) { loadState ->
-            when {
-                loadState.isLoading() -> LoadingScreen(Modifier.align(Alignment.Center))
-                loadState.isError() -> Text("Error")
-                else -> ContentScreen(data = loadState.getValueOrNull() ?: CurrentWeather())
+        Crossfade(
+            state,
+            modifier = Modifier.align(Alignment.Center)
+        ) { loadState ->
+            when (loadState) {
+                is LoadState.Loading -> LoadingScreen()
+                is LoadState.Error -> ErrorScreen {
+                    viewModel.refreshRepository()
+                }
+                is LoadState.Loaded -> ContentScreen(
+                    weatherInfo = loadState.value
+                )
             }
         }
     }
@@ -75,25 +98,107 @@ fun WeatherScreen() {
 
 @Composable
 private fun LoadingScreen(modifier: Modifier = Modifier) {
-    CircularProgressIndicator(modifier = modifier)
+    val infiniteTransition = rememberInfiniteTransition()
+    val loadDotNum by infiniteTransition.animateFloat(
+        initialValue = 0F,
+        targetValue = 199F,
+        animationSpec = infiniteRepeatable(
+            animation = tween(2000, easing = LinearEasing),
+            repeatMode = RepeatMode.Restart
+        )
+    )
+    when (loadDotNum.toInt() / 50) {
+        1 -> Text(
+            text = stringResource(R.string.loading1),
+            modifier = modifier,
+            style = MyTheme.typography.body1
+        )
+        2 -> Text(
+            text = stringResource(R.string.loading2),
+            modifier = modifier,
+            style = MyTheme.typography.body1
+        )
+        3 -> Text(
+            text = stringResource(R.string.loading3),
+            modifier = modifier,
+            style = MyTheme.typography.body1
+        )
+        else -> Text(
+            text = stringResource(R.string.loading0),
+            modifier = modifier,
+            style = MyTheme.typography.body1
+        )
+    }
 }
 
 @Composable
-private fun ContentScreen(modifier: Modifier = Modifier, data: CurrentWeather) {
+private fun ErrorScreen(modifier: Modifier = Modifier, onClickRefresh: () -> Unit) {
+    Column(modifier = modifier) {
+        Icon(
+            imageVector = Icons.Default.Error,
+            contentDescription = null,
+            modifier = Modifier
+                .size(80.dp)
+                .align(Alignment.CenterHorizontally)
+        )
+        Text(
+            text = "Failed to load Weather Info.",
+            style = MyTheme.typography.body1,
+            modifier = Modifier.paddingFromBaseline(
+                top = 20.dp,
+                bottom = 8.dp
+            )
+        )
+        IconButton(
+            modifier = Modifier
+                .size(60.dp)
+                .align(Alignment.CenterHorizontally),
+            onClick = {
+                onClickRefresh()
+            }
+        ) {
+            Icon(
+                imageVector = Icons.Default.Cached,
+                contentDescription = null,
+                modifier = Modifier
+                    .size(60.dp)
+            )
+        }
+    }
+}
+
+@Composable
+private fun ContentScreen(modifier: Modifier = Modifier, weatherInfo: WeatherInfo) {
     if (LocalConfiguration.current.orientation == Configuration.ORIENTATION_PORTRAIT) {
-        ContentScreenPortrait(modifier, data)
+        Column(modifier = modifier) {
+            ContentScreenPortrait(
+                data = weatherInfo.current,
+                modifier = Modifier.weight(1F)
+            )
+
+            WeatherForecast(
+                forecast = weatherInfo.forecast,
+                modifier = Modifier.weight(1F)
+            )
+        }
     } else {
-        ContentScreenLandscape(modifier, data)
+        Box(modifier = modifier) {
+            WeatherForecast(
+                forecast = weatherInfo.forecast,
+                modifier = Modifier.fillMaxSize()
+            )
+
+            ContentScreenLandscape(
+                data = weatherInfo.current,
+                modifier = Modifier.fillMaxSize()
+            )
+        }
     }
 }
 
 @Composable
 private fun ContentScreenPortrait(modifier: Modifier = Modifier, data: CurrentWeather) {
-    ConstraintLayout(
-        modifier = modifier
-            .fillMaxSize()
-            .statusBarsPadding()
-    ) {
+    ConstraintLayout(modifier = modifier.fillMaxWidth()) {
         val transitionState = remember { MutableTransitionState(ShowState.Hidden) }
         transitionState.targetState = ShowState.Show
 
@@ -110,13 +215,13 @@ private fun ContentScreenPortrait(modifier: Modifier = Modifier, data: CurrentWe
         }
 
         val iconGuide = createGuidelineFromStart(iconTransition / 2)
-        val (icon, info, forecast) = createRefs()
+        val (icon, info) = createRefs()
         WeatherIcon(
             weather = data.weather,
             dateTime = AppViewModel.weather.currentTime,
             modifier = Modifier
                 .constrainAs(icon) {
-                    top.linkTo(parent.top)
+                    centerVerticallyTo(parent)
                     end.linkTo(iconGuide)
                     width = Dimension.percent(0.5F)
                 }
@@ -136,40 +241,19 @@ private fun ContentScreenPortrait(modifier: Modifier = Modifier, data: CurrentWe
         WeatherInfo(
             title = data.desc, temperature = data.temp, wind = data.wind,
             modifier = Modifier
-                .padding(top = 20.dp)
                 .constrainAs(info) {
-                    top.linkTo(parent.top)
+                    centerVerticallyTo(parent)
                     end.linkTo(parent.end)
                     width = Dimension.percent(0.5F)
                 }
                 .alpha(infoTransition)
-        )
-
-        WeatherForecastScreen(
-            modifier = Modifier
-                .fillMaxWidth()
-                .constrainAs(forecast) {
-                    bottom.linkTo(parent.bottom)
-                    height = Dimension.percent(0.5F)
-                }
-                .navigationBarsPadding()
         )
     }
 }
 
 @Composable
 private fun ContentScreenLandscape(modifier: Modifier = Modifier, data: CurrentWeather) {
-    ConstraintLayout(
-        modifier = modifier
-            .fillMaxSize()
-            .statusBarsPadding()
-    ) {
-        WeatherForecastScreen(
-            modifier = Modifier
-                .fillMaxSize()
-                .navigationBarsPadding()
-        )
-
+    ConstraintLayout(modifier = modifier.fillMaxWidth()) {
         val transitionState = remember { MutableTransitionState(ShowState.Hidden) }
         transitionState.targetState = ShowState.Show
 
@@ -186,7 +270,7 @@ private fun ContentScreenLandscape(modifier: Modifier = Modifier, data: CurrentW
         }
 
         val iconGuide = createGuidelineFromStart(iconTransition / 2)
-        val (icon, info, forecast) = createRefs()
+        val (icon, info) = createRefs()
         Box(
             modifier = Modifier
                 .constrainAs(icon) {

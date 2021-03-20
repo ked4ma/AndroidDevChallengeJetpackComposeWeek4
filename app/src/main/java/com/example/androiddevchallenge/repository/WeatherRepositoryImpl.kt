@@ -17,43 +17,30 @@ package com.example.androiddevchallenge.repository
 
 import com.example.androiddevchallenge.api.DummyWeatherApi
 import com.example.androiddevchallenge.api.WeatherApi
-import com.example.androiddevchallenge.model.CurrentWeather
-import com.example.androiddevchallenge.model.WeatherForecast
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import com.example.androiddevchallenge.model.WeatherInfo
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.map
 import javax.inject.Inject
 
 class WeatherRepositoryImpl @Inject constructor(
     @DummyWeatherApi val weatherApi: WeatherApi
 ) : WeatherRepository {
-    private val _currentData = Channel<CurrentWeather>(Channel.CONFLATED)
-    override val currentData = flow {
-        try {
-            for (data in _currentData) {
-                emit(data)
-            }
-        } finally {
-            _currentData.close()
-        }
-    }
+    private val _weatherInfo = MutableStateFlow(System.currentTimeMillis())
 
-    private val _forecastData = Channel<WeatherForecast>(Channel.CONFLATED)
-    override val forecastData: Flow<WeatherForecast> = flow {
+    override val weatherInfo = _weatherInfo.map {
         try {
-            for (data in _forecastData) {
-                emit(data)
-            }
-        } finally {
-            _forecastData.close()
+            val current = weatherApi.getCurrentData().toModel()
+            val forecast = weatherApi.getForecast().toModel()
+            WeatherInfo(
+                current,
+                forecast,
+            )
+        } catch (e: Exception) {
+            null
         }
     }
 
     override suspend fun refresh() {
-        val data = weatherApi.getCurrentData().toModel()
-        _currentData.send(data)
-
-        val forecast = weatherApi.getForecast().toModel()
-        _forecastData.send(forecast)
+        _weatherInfo.emit(System.currentTimeMillis())
     }
 }

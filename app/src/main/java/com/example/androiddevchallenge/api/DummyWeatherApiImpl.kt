@@ -23,13 +23,18 @@ import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.modules.SerializersModule
 import kotlinx.serialization.modules.contextual
+import java.lang.RuntimeException
 import java.time.LocalDateTime
 import java.time.temporal.ChronoUnit
 import javax.inject.Inject
+import kotlin.random.Random
 
 class DummyWeatherApiImpl @Inject constructor() : WeatherApi {
     override suspend fun getCurrentData(): CurrentWeatherResponse {
         delay(300) // delay for dummy
+        if (Random(System.currentTimeMillis()).nextBoolean()) {
+            throw RuntimeException("dummy exception")
+        }
         return Json {
             isLenient = true
             ignoreUnknownKeys = true

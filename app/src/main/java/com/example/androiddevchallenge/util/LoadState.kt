@@ -24,7 +24,7 @@ sealed class LoadState<out T> {
 
     object Loading : LoadState<Nothing>()
     data class Loaded<T>(val value: T) : LoadState<T>()
-    data class Error(val e: Throwable) : LoadState<Nothing>()
+    data class Error(val e: Throwable? = null) : LoadState<Nothing>()
 
     fun isLoading(): Boolean {
         return this is Loading
@@ -50,7 +50,15 @@ sealed class LoadState<out T> {
 }
 
 @Suppress("USELESS_CAST")
-fun <T> Flow<T>.toLoadState(): Flow<LoadState<T>> =
-    map { LoadState.Loaded(it) as LoadState<T> }
-        .onStart { emit(LoadState.Loading) }
-        .catch { cause -> emit(LoadState.Error(cause)) }
+fun <T> Flow<T?>.toLoadState(): Flow<LoadState<T>> =
+    map {
+        if (it == null) {
+            LoadState.Error()
+        } else {
+            LoadState.Loaded(it) as LoadState<T>
+        }
+    }.onStart {
+        emit(LoadState.Loading)
+    }.catch { cause ->
+        emit(LoadState.Error(cause))
+    }
