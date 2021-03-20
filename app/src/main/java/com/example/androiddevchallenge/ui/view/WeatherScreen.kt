@@ -98,10 +98,26 @@ private fun LoadingScreen(modifier: Modifier = Modifier) {
         )
     )
     when (loadDotNum.toInt() / 50) {
-        1 -> Text(text = stringResource(R.string.loading1), modifier = modifier)
-        2 -> Text(text = stringResource(R.string.loading2), modifier = modifier)
-        3 -> Text(text = stringResource(R.string.loading3), modifier = modifier)
-        else -> Text(text = stringResource(R.string.loading0), modifier = modifier)
+        1 -> Text(
+            text = stringResource(R.string.loading1),
+            modifier = modifier,
+            style = MyTheme.typography.body1
+        )
+        2 -> Text(
+            text = stringResource(R.string.loading2),
+            modifier = modifier,
+            style = MyTheme.typography.body1
+        )
+        3 -> Text(
+            text = stringResource(R.string.loading3),
+            modifier = modifier,
+            style = MyTheme.typography.body1
+        )
+        else -> Text(
+            text = stringResource(R.string.loading0),
+            modifier = modifier,
+            style = MyTheme.typography.body1
+        )
     }
 }
 
